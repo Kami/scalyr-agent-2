@@ -217,7 +217,7 @@ jobs:
           python_version: "3.5"
           tox_target: "py3.5-unit-tests"
 
-  unittest-27:
+  unittest-27-latest:
     working_directory: ~/scalyr-agent-2
     docker:
       - image: circleci/python:2.7
@@ -226,6 +226,16 @@ jobs:
           python_version: "2.7"
           tox_target: "coverage"
           store_coverage: true
+
+  unittest-275:
+    working_directory: ~/scalyr-agent-2
+    docker:
+      - image: manashardas/ubuntu-python2.7.5:latest
+    steps:
+      - unittest_tox:
+          python_version: "2.77"
+          tox_version: "2.9.1"
+          tox_target: "py2.7-unit-tests"
 
   unittest-26:
     working_directory: ~/scalyr-agent-2
@@ -687,27 +697,7 @@ workflows:
   version: 2
   unittest:
     jobs:
-      - lint-checks
-      - unittest-38
-      - unittest-37
-      - unittest-36
-      - unittest-35
-      - unittest-27
-      - unittest-26
-      - smoke-standalone-37
-      - smoke-standalone-27
-      - smoke-standalone-26
-      - smoke-standalone-27-tls12
-      - smoke-standalone-26-tls12
-      - smoke-docker-json
-      - smoke-docker-syslog
-      - smoke-k8s
-      - coverage:
-          requires:
-            - unittest-27
-            - smoke-docker-json
-            - smoke-docker-syslog
-            - smoke-k8s
+      - unittest-275
   benchmarks:
     jobs:
       - benchmarks-idle-agent-py-27:
