@@ -5,6 +5,7 @@
   // Circle CI doesn't have access to CA bundle file so we disable certificate verification
   verify_server_certificate: false,
   config_change_check_interval: 5,
+  debug_level: "5",
 
   server_attributes: {
      serverHost: "ci-codespeed-benchmarks",

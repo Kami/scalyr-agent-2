@@ -341,7 +341,7 @@ class ScalyrClientSession(object):
                             scalyr_logging.DEBUG_LEVEL_5,
                             'Sending POST %s with body "%s"',
                             request_path,
-                            body_str_raw,
+                            body_str,
                         )
                         self.__connection.post(request_path, body=body_str)
                     else:
