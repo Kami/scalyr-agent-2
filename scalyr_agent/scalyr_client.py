@@ -54,6 +54,12 @@ import scalyr_agent.scalyr_logging as scalyr_logging
 import scalyr_agent.util as scalyr_util
 from scalyr_agent.connection import ConnectionFactory
 
+# Maximum request body size we log under DEBUG 5 log level. If body is larget than this value, we
+# truncate it.
+# This way we prevent debug log file from growing too large and we avoid memory leak under Python
+# 2.7 when logging very large unicode bodies
+MAX_REQUEST_BODY_SIZE_LOG_MSG = 1024
+
 log = scalyr_logging.getLogger(__name__)
 
 
@@ -312,9 +318,9 @@ class ScalyrClientSession(object):
             else:
                 body_str = b""
 
-            # Workaround to fix issue with logging non utf-8 characters. We simply ignore
-            # non utf-8 characters
-            body_str_raw = body_str.decode("utf-8", "ignore")
+            # Store reference to the raw uncompressed body string since we will need it later for
+            # logging purposes
+            body_str_raw = body_str
 
             self.total_request_bytes_sent += len(body_str) + len(request_path)
 
@@ -337,12 +343,26 @@ class ScalyrClientSession(object):
                     )
                 else:
                     if is_post:
-                        log.log(
-                            scalyr_logging.DEBUG_LEVEL_5,
-                            'Sending POST %s with body "%s"',
-                            request_path,
-                            body_str,
-                        )
+                        if log.getEffectiveLevel() == scalyr_logging.DEBUG_LEVEL_5:
+                            # NOTE: We only perform this string formatting if debug level is enabled
+                            # to save some CPU cycles when it's not
+
+                            # Workaround to fix issue with logging non utf-8 characters. We simply
+                            # ignore non utf-8 characters.
+                            body_str_raw = body_str_raw.decode("utf-8", "ignore")
+
+                            if len(body_str_raw) > MAX_REQUEST_BODY_SIZE_LOG_MSG:
+                                body_str_raw = body_str_raw[
+                                    :MAX_REQUEST_BODY_SIZE_LOG_MSG
+                                ]
+                                body_str_raw += " ... [body truncated] ..."
+
+                            log.log(
+                                scalyr_logging.DEBUG_LEVEL_5,
+                                'Sending POST %s with body "%s"',
+                                request_path,
+                                body_str_raw,
+                            )
                         self.__connection.post(request_path, body=body_str)
                     else:
                         log.log(
