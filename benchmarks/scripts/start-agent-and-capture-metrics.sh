@@ -90,6 +90,7 @@ CAPTURE_SCRIPT_COMMAND="${CAPTURE_METRICS_SCRIPT_PATH} \
     --branch=\"${CODESPEED_BRANCH}\" \
     --commit-date=\"${COMMIT_DATE}\" \
     --commit-id=\"${COMMIT_HASH}\" \
+    --dry-run \
     --debug"
 
 echo "Starting the metrics capture script..."

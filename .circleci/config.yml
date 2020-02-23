@@ -9,6 +9,7 @@ master_only: &master_only
         - master
         - performance_tracking
         - release_performance_tracking
+        - agent_memory_tracking_instrumentation
 
 version: 2.1
 commands:
@@ -167,6 +168,8 @@ commands:
             sh -c 'tail -n +0 -F /tmp/capture_script.log | { sed "/Run completed, stopping the agent process./ q" && kill $$ ;}'
             wait ${CAPTURE_SCRIPT_PID} || true
             set -e
+
+            exit 0
 
             # Send line count values for various log levels (if enabled)
             if [ "<< parameters.capture_line_counts >>" = "true" ]; then
@@ -685,29 +688,6 @@ jobs:
 
 workflows:
   version: 2
-  unittest:
-    jobs:
-      - lint-checks
-      - unittest-38
-      - unittest-37
-      - unittest-36
-      - unittest-35
-      - unittest-27
-      - unittest-26
-      - smoke-standalone-37
-      - smoke-standalone-27
-      - smoke-standalone-26
-      - smoke-standalone-27-tls12
-      - smoke-standalone-26-tls12
-      - smoke-docker-json
-      - smoke-docker-syslog
-      - smoke-k8s
-      - coverage:
-          requires:
-            - unittest-27
-            - smoke-docker-json
-            - smoke-docker-syslog
-            - smoke-k8s
   benchmarks:
     jobs:
       - benchmarks-idle-agent-py-27:

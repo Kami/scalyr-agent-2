@@ -963,9 +963,16 @@ class ScalyrAgent(object):
 
                 profiler = Profiler(self.__config)
 
+                log_directory = os.path.dirname(self.__config.agent_log_path)
+                mem_path = os.path.join(log_directory, "agent_memory_usage.log")
+
+                from mem_top import mem_top
+
                 while not self.__run_state.sleep_but_awaken_if_stopped(
                     config_change_check_interval
                 ):
+                    log.info(mem_top(limit=25, width=250))
+
                     current_time = time.time()
                     self.__last_config_check_time = current_time
 
