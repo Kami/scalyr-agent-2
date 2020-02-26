@@ -349,7 +349,6 @@ if __name__ == "__main__":
         default=False,
         help=("Just capture metrics, but don't submit them to CodeSpeed."),
     )
-
     args = parser.parse_args()
 
     codespeed_auth = parse_auth_credentials(args.codespeed_auth)
