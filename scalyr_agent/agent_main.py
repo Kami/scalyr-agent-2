@@ -1043,8 +1043,8 @@ class ScalyrAgent(object):
                         )
                         verified = self.__verify_config(
                             new_config,
-                            disable_create_monitors_manager=disable_create_monitors_manager,
-                            disable_create_copying_manager=disable_create_copying_manager,
+                            disable_create_monitors_manager=True,
+                            disable_create_copying_manager=True,
                             disable_cache_config=disable_cache_config,
                         )
 
