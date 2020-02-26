@@ -232,10 +232,16 @@ class Collector(object):
           cut_off: A UNIX timestamp.  Any value that's older than this will be
             removed from the cache.
         """
-        for key in self.values.keys():
+        # NOTE: It's important we create copy of keys because otherwise we will be changing
+        # dictionary during iteration which throws under Python 3
+        LOG.debug('Pre evict cache size: %s' % (len(self.values)))
+        keys = list(self.values.keys())
+        for key in keys:
             time = self.values[key][3]
             if time < cut_off:
                 del self.values[key]
+        LOG.debug('Post evict cache size: %s' % (len(self.values)))
+        del keys
 
 
 class StdinCollector(Collector):
@@ -304,6 +310,7 @@ class ReaderThread(threading.Thread):
         self.run_state = run_state
 
     def run(self):
+        LOG.debug('inside run')
         """Main loop for this thread.  Just reads from collectors,
            does our input processing and de-duping, and puts the data
            into the queue."""
@@ -315,6 +322,7 @@ class ReaderThread(threading.Thread):
         # while breaking out every once in a while to setup selects
         # on new children.
         while (self.run_state is None and ALIVE) or (self.run_state is not None and self.run_state.is_running()):
+            LOG.debug('collector loop run')
             for col in all_living_collectors():
                 for line in col.collect():
                     self.process_line(col, line)
@@ -695,12 +703,12 @@ def parse_cmdline(argv):
                       default='/var/run/tcollector.pid',
                       metavar='FILE', help='Write our pidfile')
     parser.add_option('--dedup-interval', dest='dedupinterval', type='int',
-                      default=300, metavar='DEDUPINTERVAL',
+                      default=1, metavar='DEDUPINTERVAL',
                       help='Number of seconds in which successive duplicate '
                            'datapoints are suppressed before sending to the TSD. '
                            'default=%default')
     parser.add_option('--evict-interval', dest='evictinterval', type='int',
-                      default=6000, metavar='EVICTINTERVAL',
+                      default=3, metavar='EVICTINTERVAL',
                       help='Number of seconds after which to remove cached '
                            'values of old data points to save memory. '
                            'default=%default')
@@ -837,14 +845,15 @@ def main_loop(options, modules, sender, tags, output_heartbeats=True, run_state=
 
     next_heartbeat = int(time.time() + 600)
     while run_state is None or run_state.is_running():
+        LOG.debug('inside tcollector main loop')
         populate_collectors(options.cdir)
         reload_changed_config_modules(modules, options, sender, tags)
         reap_children()
         spawn_children()
         if run_state is not None:
-            run_state.sleep_but_awaken_if_stopped(15)
+            run_state.sleep_but_awaken_if_stopped(2)
         else:
-            time.sleep(15)
+            time.sleep(2)
         now = int(time.time())
         if output_heartbeats and now >= next_heartbeat:
             LOG.info('Heartbeat (%d collectors running)'

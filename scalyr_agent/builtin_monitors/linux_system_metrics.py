@@ -777,7 +777,7 @@ class SystemMetricsMonitor(ScalyrMonitor):
         # At this point we're ready to start processing, so start the ReaderThread
         # so we can have it running and pulling in data from reading the stdins of all the collectors
         # that will be soon running.
-        reader = ReaderThread(0, 300, self._run_state)
+        reader = ReaderThread(0, 5, self._run_state)
         reader.start()
 
         # Start the writer thread that grabs lines off of the reader thread's queue and emits
