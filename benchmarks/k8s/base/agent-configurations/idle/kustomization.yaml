@@ -1,5 +1,6 @@
 configMapGenerator:
   - name: codespeed-config-agent-settings
+    namespace: agent-benchmark
     files:
       - agent-config-additional-fields
     literals:

@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: agent-k8s-codespeed
+  namespace: agent-benchmark
 spec:
   template:
     spec:
